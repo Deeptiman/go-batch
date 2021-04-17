@@ -4,15 +4,16 @@ import (
 	"sync/atomic"
 	"time"
 
-	plog "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 
 var (
 	itemRead 	uint64
-	itemId = 1
+	itemCounter = 1
 	DefaultMaxItems = uint64(100)
 	DefaultMaxWait = time.Duration(30) * time.Second //seconds
+	DefaultBatchNo = int32(1)
 
 	items []BatchItems
 )
@@ -20,31 +21,31 @@ var (
 type ConsumerFunc func(items []BatchItems)
 
 type BatchProducer struct {
-	Watcher 		chan interface{} 
+	Watcher 		chan *BatchItems 
 	MaxItems 		uint64
 	BatchNo			int32
 	MaxWait 		time.Duration
-	CallBackFunc 	ConsumerFunc
+	ConsumerFunc 	ConsumerFunc
 	Quit 			chan bool
-	Log 			*plog.Logger
+	Log 			*log.Logger
 }
 
 func NewBatchProducer(callBackFn ConsumerFunc, opts ...BatchOptions) *BatchProducer{
 
 	return &BatchProducer {
-		Watcher: make(chan interface{}),
-		CallBackFunc: callBackFn,
+		Watcher: make(chan *BatchItems),
+		ConsumerFunc: callBackFn,
 		MaxItems: DefaultMaxItems,
 		MaxWait: DefaultMaxWait,
+		BatchNo: DefaultBatchNo,
 		Quit: make(chan bool),
-		Log: plog.New(),
+		Log: log.New(),
 	}
 }
 
 func (p *BatchProducer) prepareBatch(items []BatchItems) []BatchItems {
 
-	p.addBatchNo()
-	p.CallBackFunc(items)
+	p.ConsumerFunc(items)
 	return p.resetItem(items)
 }
 
@@ -55,25 +56,29 @@ func (p *BatchProducer) WatchProducer() {
 		select {
 		case item := <-p.Watcher:
 			
-			p.Log.WithFields(plog.Fields{"Item": item, "GetItemRead": p.getItemRead()}).Info("Produce Items")
-
-			p.itemRead()
-			items = append(items, *p.getBatchItem(item))
-			itemId++
+			item.BatchNo = 	int(p.getBatchNo())
+			p.Log.WithFields(log.Fields{"Item": item, "GetItemCounter": itemCounter}).Info("Produce Items")
+			
+			items = append(items, *item)
+			itemCounter++
 			if  p.isBatchReady() {
+				p.Log.WithFields(log.Fields{"Item Size": len(items), "MaxItems": p.MaxItems}).Warn("BatchReady")
+			
+				itemCounter = 0
 				items = p.prepareBatch(items)
 			}
 			
 		case <-time.After(p.MaxWait):
-			p.Log.WithFields(plog.Fields{"Items": len(items)}).Warn("MaxWait")
+			p.Log.WithFields(log.Fields{"Items": len(items)}).Warn("MaxWait")
 			
 			if len(items) == 0 {
 				return
 			}
-
+			itemCounter = 0
 			items = p.prepareBatch(items)
 		case <-p.Quit:
-			p.Log.Warn("Quit")
+			p.Log.Warn("Quit BatchProducer")
+
 			return
 		}
 	}
@@ -95,24 +100,8 @@ func (p *BatchProducer) resetItem(items []BatchItems) []BatchItems {
 	return items
 }
 
-func (p *BatchProducer) itemRead() {
-	atomic.AddUint64(&itemRead, 1)
-}
-
-func (p *BatchProducer) getItemRead() uint64{
-	return atomic.LoadUint64(&itemRead)
-}
-
 func (p *BatchProducer) isBatchReady() bool {
-	itemRead := p.getItemRead()
-	return p.MaxItems > uint64(0) && itemRead >= p.MaxItems
-}
-
-func (p *BatchProducer) getBatchItem(item interface{}) *BatchItems {
-	return &BatchItems {
-		Id: itemId,
-		Item: item,
-	}
+	return uint64(itemCounter) >= p.MaxItems
 }
 
 func (p *BatchProducer) resetItemRead() {
@@ -124,5 +113,10 @@ func (p *BatchProducer) addBatchNo() {
 }
 
 func (p *BatchProducer) getBatchNo() int32 {
+	
+	if itemCounter == 0 {
+		p.addBatchNo()
+	}
+
 	return atomic.LoadInt32(&p.BatchNo)
 }

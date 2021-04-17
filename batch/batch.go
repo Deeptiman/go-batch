@@ -7,6 +7,7 @@ import (
 
 type Batch struct {
 	Item 			chan interface{}
+	Id 				int
 	Semaphore 		*Semaphore
 	Producer		*BatchProducer
 	Consumer 		*BatchConsumer
@@ -52,17 +53,29 @@ func (b *Batch) ReadItems() {
 
 		select {
 		case item := <-b.Item:
-
+			b.Id++
 			go func(item interface{}){
-				b.Producer.Watcher <- item
+				b.Producer.Watcher <- &BatchItems{
+					Id:   b.Id,
+					Item: item,	
+				}
 			}(item)		
 			time.Sleep(time.Duration(100) * time.Millisecond)				
 		}
 	}
 }
 
-func (b *Batch) Stop() {
+func (b *Batch) StopProducer() {
 	b.Producer.Quit <- true
+}
+
+func (b *Batch) StopConsumer() {
+	b.Consumer.Quit <- true
+}
+
+func (b *Batch) Stop() {
+	go b.StopProducer()
+	go b.StopConsumer()
 }
 
 func (b *Batch) Close() {
@@ -77,8 +90,7 @@ func (b *Batch) Close() {
 		case <-done:
 			b.Log.WithFields(log.Fields{"Remaining Items": len(items)}).Warn("Done")
 			b.Semaphore.Lock()
-			b.Stop()
-			b.Consumer.Shutdown()
+			b.Stop()			
 			close(b.Item)	
 			b.Semaphore.Unlock()
 		}

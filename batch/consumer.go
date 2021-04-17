@@ -1,12 +1,12 @@
 package batch
 
 import (
-	"fmt"
 	"context"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -17,8 +17,10 @@ type BatchConsumer struct {
 	ConsumerCh 		chan []BatchItems
 	BatchWorkerCh 	chan []BatchItems
 	Supply 			*BatchSupply
-	wg 				*sync.WaitGroup
+	Workerline		*sync.WaitGroup
 	TerminateCh		chan os.Signal
+	Quit 			chan bool
+	Log				*log.Logger
 }
 
 type BatchSupply struct {
@@ -32,8 +34,10 @@ func NewBatchConsumer() *BatchConsumer{
 		ConsumerCh: make(chan []BatchItems, 1),
 		BatchWorkerCh: make(chan []BatchItems, DefaultWorkerPool),
 		Supply: NewBatchSupply(),
-		wg: &sync.WaitGroup{},
+		Workerline:	&sync.WaitGroup{},
 		TerminateCh: make(chan os.Signal, 1),
+		Quit: make(chan bool, 1),
+		Log: log.New(),
 	}
 }
 
@@ -47,11 +51,10 @@ func NewBatchSupply() *BatchSupply{
 func(c *BatchConsumer) StartConsumer() {
 
 	ctx, cancel := context.WithCancel(context.Background())
-	//wg := &sync.WaitGroup{}
-
+	
 	go c.ConsumerBatch(ctx)
 
-	c.wg.Add(DefaultWorkerPool)
+	c.Workerline.Add(DefaultWorkerPool)
 	for i:=0; i < DefaultWorkerPool; i++ {
 		go c.WorkerFunc(i)
 	}
@@ -60,7 +63,7 @@ func(c *BatchConsumer) StartConsumer() {
 	<-c.TerminateCh
 
 	cancel()
-	c.wg.Wait()
+	c.Workerline.Wait()
 }
 
 func (c *BatchConsumer) ConsumerFunc(items []BatchItems) {
@@ -74,19 +77,24 @@ func(c *BatchConsumer) ConsumerBatch(ctx context.Context) {
 		case batchItems := <-c.ConsumerCh:
 			c.BatchWorkerCh <- batchItems
 		case <-ctx.Done():
-			fmt.Println("Request cancel signal received!")
-			//close(c.BatchWorkerCh)
+			c.Log.Warn("Request cancel signal received!")
+			close(c.BatchWorkerCh)
 			return
+		case <-c.Quit:
+			c.Log.Warn("Quit BatchConsumer")			
+			close(c.BatchWorkerCh)
+			return 
 		}
 	}
 }
 
 func (c *BatchConsumer) WorkerFunc(index int) {
-	//defer c.wg.Done()
+	defer c.Workerline.Done()
 
 	for batch := range c.BatchWorkerCh {
-		fmt.Println("Worker-", index, " : Batch -- ", batch)
-
+	
+		c.Log.WithFields(log.Fields{"Worker": index, "Batch": batch}).Info("BatchConsumer")
+			
 		go c.GetBatchSupply()
 
 		select {
@@ -98,11 +106,7 @@ func (c *BatchConsumer) WorkerFunc(index int) {
 
 func (c *BatchConsumer) Shutdown() {
 
-	close(c.BatchWorkerCh)
-
-	c.wg.Done()
-
-	fmt.Println("Shutdown signal received!")
+	c.Log.Warn("Shutdown signal received!")
 	signal.Notify(c.TerminateCh, syscall.SIGINT, syscall.SIGTERM)
 	<-c.TerminateCh
 }

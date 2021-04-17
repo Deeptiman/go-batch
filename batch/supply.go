@@ -1,6 +1,8 @@
 package batch
 
-import "fmt"
+import (
+	log "github.com/sirupsen/logrus"
+)
 
 func (c *BatchConsumer) GetBatchSupply() {
 
@@ -12,7 +14,8 @@ func (c *BatchConsumer) GetBatchSupply() {
 
 		select {
 		case supply := <-supplyCh:
-			fmt.Println("Supply - ", supply)
+			c.Log.WithFields(log.Fields{"Supply": supply}).Info("BatchSupply")
+		
 			c.Supply.ClientSupplyCh<- supply
 		}
 }
