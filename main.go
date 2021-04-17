@@ -33,6 +33,8 @@ func main() {
 
 	go func() {
 
+		// Infinite loop to listen to the Consumer Client Supply Channel that releases
+        // the []BatchItems for each iteration.
 		for {
 			for bt := range b.Consumer.Supply.ClientSupplyCh {
 				fmt.Println("Resources", "Batch Supply - "," : ",bt)
