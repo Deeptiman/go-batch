@@ -129,7 +129,7 @@ func (c *BatchConsumer) WorkerFunc(index int) {
 
 	for batch := range c.BatchWorkerCh {
 	
-		c.Log.WithFields(log.Fields{"Worker": index, "Batch": batch}).Info("BatchConsumer")
+		c.Log.WithFields(log.Fields{"Worker": index, "Batch": len(batch)}).Warn("Workerline")
 			
 		go c.GetBatchSupply()
 

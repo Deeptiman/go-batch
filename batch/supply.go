@@ -17,7 +17,7 @@ func (c *BatchConsumer) GetBatchSupply() {
 
 		select {
 		case supply := <-supplyCh:
-			c.Log.WithFields(log.Fields{"Supply": supply}).Info("BatchSupply")
+			c.Log.WithFields(log.Fields{"Supply": len(supply)}).Warn("BatchSupply")
 		
 			c.Supply.ClientSupplyCh<- supply
 		}

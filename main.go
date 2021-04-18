@@ -29,7 +29,7 @@ func main() {
 
 	b := batch.NewBatch(batch.WithMaxItems(uint64(mFlag)))
 
-	go b.StartBachProcessing()
+	b.StartBachProcessing()
 
 	go func() {
 
@@ -37,17 +37,17 @@ func main() {
         // the []BatchItems for each iteration.
 		for {
 			for bt := range b.Consumer.Supply.ClientSupplyCh {
-				fmt.Println("Resources", "Batch Supply - "," : ",bt)
+				logs.WithFields(log.Fields{"Batch": bt}).Warn("Client")
 			}
 		}
 	}()
-
-	for i := 1; i <= rFlag; i++ {
-		b.Item <- &Resources{
-			id:   i,
-			name: fmt.Sprintf("%s%d","R-",  i),
-			flag: false,
+	
+		for i := 1; i <= rFlag; i++ {
+			b.Item <- &Resources{
+				id:   i,
+				name: fmt.Sprintf("%s%d","R-",  i),
+				flag: false,
+			}
 		}
-	}
-	b.Close()
+		b.Close()
 }

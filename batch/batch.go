@@ -77,34 +77,25 @@ func (b *Batch) StopProducer() {
 	b.Producer.Quit <- true
 }
 
-// StopConsumer to exit the Consumer line.
-func (b *Batch) StopConsumer() {
-	b.Consumer.Quit <- true
-}
-
 // Stop to run StopProducer/StopConsumer goroutines to quit the execution.
 func (b *Batch) Stop() {
 	go b.StopProducer()
-	go b.StopConsumer()
 }
 
 // Close is the exit function to terminate the batch processing.
 func (b *Batch) Close() {
-	b.Log.WithFields(log.Fields{"Remaining Items": len(items)}).Warn("Close")
+	b.Log.WithFields(log.Fields{"Remaining Items": len(items)}).Warn("CheckRemainingItems")
 
 	done := make(chan bool)
 
 	go b.Producer.CheckRemainingItems(done)
 
-	for {
 		select {
 		case <-done:
-			b.Log.WithFields(log.Fields{"Remaining Items": len(items)}).Warn("Done")
+			b.Log.Warn("Done")
 			b.Semaphore.Lock()
 			b.Stop()			
 			close(b.Item)	
 			b.Semaphore.Unlock()
 		}
-	}
-
 }
