@@ -5,6 +5,15 @@ import (
 	"time"
 )
 
+// Batch struct defines the structure payload for a Batch.
+//
+//	Item: channel that contains the Resources object from the client.
+//	Id: Each item that a client send for the processing marked with Id.
+//	Semaphore: The ReadWrite locks handle by the Semaphore object, it helps to synchronize the batch processing session.
+//	Islocked: Whenever the batch processing session starts, Islocked changes to [true], so it will restrict the concurrent batch processing.
+//  Producer: The BatchItem object send to the Producer for further processing.
+//  Consumer: The Consumer arranges the prepared []BatchItems for the Workerline.
+//  Log: Batch processing library uses "github.com/sirupsen/logrus" as logging tool.
 type Batch struct {
 	Item      chan interface{}
 	Id        int
@@ -41,7 +50,7 @@ func NewBatch(opts ...BatchOptions) *Batch {
 	return b
 }
 
-// StartBachProcessing function to begin the BatchProcessing library and to start the Producer/
+// StartBatchProcessing function to begin the BatchProcessing library and to start the Producer/
 // Consumer listeners. The ReadItems goroutine will receive the item from a source that keeps
 // listening infinitely.
 func (b *Batch) StartBatchProcessing() {
