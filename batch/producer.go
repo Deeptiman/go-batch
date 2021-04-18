@@ -7,12 +7,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-
 var (
-	itemCounter = 1
+	itemCounter     = 1
 	DefaultMaxItems = uint64(100)
-	DefaultMaxWait = time.Duration(30) * time.Second //seconds
-	DefaultBatchNo = int32(1)
+	DefaultMaxWait  = time.Duration(30) * time.Second //seconds
+	DefaultBatchNo  = int32(1)
 
 	items []BatchItems
 )
@@ -20,41 +19,41 @@ var (
 type ConsumerFunc func(items []BatchItems)
 
 type BatchProducer struct {
-	Watcher 		chan *BatchItems 
-	MaxItems 		uint64
-	BatchNo			int32
-	MaxWait 		time.Duration
-	ConsumerFunc 	ConsumerFunc
-	Quit 			chan bool
-	Log 			*log.Logger
+	Watcher      chan *BatchItems
+	MaxItems     uint64
+	BatchNo      int32
+	MaxWait      time.Duration
+	ConsumerFunc ConsumerFunc
+	Quit         chan bool
+	Log          *log.Logger
 }
 
 // NewBatchProducer defines the producer line for creating a Batch. There will be a Watcher
 // channel that receives the incoming BatchItem from the source. The ConsumerFunc works as a
-// callback function to the Consumer line to release the newly created set of BatchItems. 
+// callback function to the Consumer line to release the newly created set of BatchItems.
 //
 //
-// Each Batch is registered with a BatchNo that gets created when the Batch itemCounter++ increases 
-// to the MaxItems value. 
-func NewBatchProducer(callBackFn ConsumerFunc, opts ...BatchOptions) *BatchProducer{
+// Each Batch is registered with a BatchNo that gets created when the Batch itemCounter++ increases
+// to the MaxItems value.
+func NewBatchProducer(callBackFn ConsumerFunc, opts ...BatchOptions) *BatchProducer {
 
-	return &BatchProducer {
-		Watcher: make(chan *BatchItems),
+	return &BatchProducer{
+		Watcher:      make(chan *BatchItems),
 		ConsumerFunc: callBackFn,
-		MaxItems: DefaultMaxItems,
-		MaxWait: DefaultMaxWait,
-		BatchNo: DefaultBatchNo,
-		Quit: make(chan bool),
-		Log: log.New(),
+		MaxItems:     DefaultMaxItems,
+		MaxWait:      DefaultMaxWait,
+		BatchNo:      DefaultBatchNo,
+		Quit:         make(chan bool),
+		Log:          log.New(),
 	}
 }
 
 // WatchProducer has the Watcher channel that receives the BatchItem object from the Batch read
 // item channel. Watcher marks each BatchItem with a BatchNo and adds it to the []BatchItems array.
 // After the batch itemCounter++ increases to the MaxItems [DefaultMaxItems: 100], the Batch gets
-// releases to the Consumer callback function. 
+// releases to the Consumer callback function.
 //
-// If the Batch processing get to halt in the Watcher 
+// If the Batch processing get to halt in the Watcher
 // channel then the MaxWait [DefaultMaxWait: 30 sec] timer channel gets called to check the state
 // to releases the Batch to the Consumer callback function.
 func (p *BatchProducer) WatchProducer() {
@@ -63,22 +62,22 @@ func (p *BatchProducer) WatchProducer() {
 
 		select {
 		case item := <-p.Watcher:
-			
-			item.BatchNo = 	int(p.getBatchNo())
+
+			item.BatchNo = int(p.getBatchNo())
 			p.Log.WithFields(log.Fields{"Item": item, "GetItemCounter": itemCounter}).Info("Produce Items")
-			
+
 			items = append(items, *item)
 			itemCounter++
-			if  p.isBatchReady() {
+			if p.isBatchReady() {
 				p.Log.WithFields(log.Fields{"Item Size": len(items), "MaxItems": p.MaxItems}).Warn("BatchReady")
-			
+
 				itemCounter = 0
 				items = p.releaseBatch(items)
 			}
-			
+
 		case <-time.After(p.MaxWait):
 			p.Log.WithFields(log.Fields{"Items": len(items)}).Warn("MaxWait")
-			
+
 			if len(items) == 0 {
 				return
 			}
@@ -92,7 +91,7 @@ func (p *BatchProducer) WatchProducer() {
 	}
 }
 
-// releaseBatch will call the Consumer callback function to send the prepared []BatchItems to 
+// releaseBatch will call the Consumer callback function to send the prepared []BatchItems to
 // the Consumer line. Also it reset the []BatchItems array (items = items[:0]) to begin the
 // next set of batch processing.
 func (p *BatchProducer) releaseBatch(items []BatchItems) []BatchItems {
@@ -107,8 +106,8 @@ func (p *BatchProducer) resetItem(items []BatchItems) []BatchItems {
 	return items
 }
 
-// CheckRemainingItems is a force re-check function on remaining batch items that are available 
-// for processing. 
+// CheckRemainingItems is a force re-check function on remaining batch items that are available
+// for processing.
 func (p *BatchProducer) CheckRemainingItems(done chan bool) {
 
 	if len(items) >= 1 {
@@ -132,7 +131,7 @@ func (p *BatchProducer) addBatchNo() {
 
 // getBatchNo will get the current BatchNo from the atomic variable.
 func (p *BatchProducer) getBatchNo() int32 {
-	
+
 	if itemCounter == 0 {
 		p.addBatchNo()
 	}

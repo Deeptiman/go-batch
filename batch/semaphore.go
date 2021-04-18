@@ -5,15 +5,15 @@ import "sync"
 type empty struct{}
 
 type Semaphore struct {
-	blockch		chan empty
-	write 		sync.WaitGroup
-	waiter		int
+	blockch chan empty
+	write   sync.WaitGroup
+	waiter  int
 }
 
 func NewSemaphore(n int) *Semaphore {
 	return &Semaphore{
 		blockch: make(chan empty, n),
-		waiter: n,
+		waiter:  n,
 	}
 }
 

@@ -15,10 +15,10 @@ func (c *BatchConsumer) GetBatchSupply() {
 
 	c.Supply.BatchSupplyCh <- supplyCh
 
-		select {
-		case supply := <-supplyCh:
-			c.Log.WithFields(log.Fields{"Supply": len(supply)}).Warn("BatchSupply")
-		
-			c.Supply.ClientSupplyCh<- supply
-		}
+	select {
+	case supply := <-supplyCh:
+		c.Log.WithFields(log.Fields{"Supply": len(supply)}).Warn("BatchSupply")
+
+		c.Supply.ClientSupplyCh <- supply
+	}
 }

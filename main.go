@@ -4,15 +4,15 @@ import (
 	"flag"
 	"fmt"
 	//"time"
-	batch "go-batch/batch"
 	log "github.com/sirupsen/logrus"
+	batch "go-batch/batch"
 )
 
 // Resources Structure
 type Resources struct {
-	id 		int
-	name 	string
-	flag 	bool
+	id   int
+	name string
+	flag bool
 }
 
 func main() {
@@ -26,7 +26,7 @@ func main() {
 
 	logs := log.New()
 
-	logs.WithFields(log.Fields{"Batch":"Items"}).Info("Batch System")
+	logs.WithFields(log.Fields{"Batch": "Items"}).Info("Batch System")
 
 	b := batch.NewBatch(batch.WithMaxItems(uint64(mFlag)))
 
@@ -45,20 +45,20 @@ func main() {
 	go func() {
 
 		// Infinite loop to listen to the Consumer Client Supply Channel that releases
-        // the []BatchItems for each iteration.
+		// the []BatchItems for each iteration.
 		for {
 			for bt := range b.Consumer.Supply.ClientSupplyCh {
 				logs.WithFields(log.Fields{"Batch": bt}).Warn("Client")
 			}
 		}
 	}()
-	
-		for i := 1; i <= rFlag; i++ {
-			b.Item <- &Resources{
-				id:   i,
-				name: fmt.Sprintf("%s%d","R-",  i),
-				flag: false,
-			}
+
+	for i := 1; i <= rFlag; i++ {
+		b.Item <- &Resources{
+			id:   i,
+			name: fmt.Sprintf("%s%d", "R-", i),
+			flag: false,
 		}
-		b.Close()
+	}
+	b.Close()
 }

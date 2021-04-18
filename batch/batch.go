@@ -1,34 +1,33 @@
 package batch
 
 import (
-	"time"
 	log "github.com/sirupsen/logrus"
+	"time"
 )
 
-
 type Batch struct {
-	Item 			chan interface{}
-	Id 				int
-	Semaphore 		*Semaphore
-	Islocked		bool
-	Producer		*BatchProducer
-	Consumer 		*BatchConsumer
-	Log 			*log.Logger
+	Item      chan interface{}
+	Id        int
+	Semaphore *Semaphore
+	Islocked  bool
+	Producer  *BatchProducer
+	Consumer  *BatchConsumer
+	Log       *log.Logger
 }
 
 // NewBatch creates a new Batch object with BatchProducer & BatchConsumer. The BatchOptions
 // sets the MaxItems for a batch and maximum wait time for a batch to complete set by MaxWait.
-func NewBatch(opts ...BatchOptions) *Batch{
-	
+func NewBatch(opts ...BatchOptions) *Batch {
+
 	b := &Batch{
 		Item: make(chan interface{}),
-		Log: log.New(),
+		Log:  log.New(),
 	}
 
 	c := NewBatchConsumer()
 
 	p := NewBatchProducer(c.ConsumerFunc)
-	
+
 	for _, opt := range opts {
 		opt(p)
 	}
@@ -36,7 +35,7 @@ func NewBatch(opts ...BatchOptions) *Batch{
 	b.Producer = p
 	b.Consumer = c
 	b.Semaphore = NewSemaphore(int(p.MaxItems))
- 
+
 	items = make([]BatchItems, 0, p.MaxItems)
 
 	return b
@@ -59,8 +58,8 @@ func (b *Batch) StartBatchProcessing() {
 	go b.ReadItems()
 }
 
-// ReadItems function will run infinitely to listen to the Resource channel and the received 
-// object marshaled with BatchItem and then send to the Producer Watcher channel for further 
+// ReadItems function will run infinitely to listen to the Resource channel and the received
+// object marshaled with BatchItem and then send to the Producer Watcher channel for further
 // processing.
 func (b *Batch) ReadItems() {
 
@@ -71,13 +70,13 @@ func (b *Batch) ReadItems() {
 		select {
 		case item := <-b.Item:
 			b.Id++
-			go func(item interface{}){
+			go func(item interface{}) {
 				b.Producer.Watcher <- &BatchItems{
 					Id:   b.Id,
-					Item: item,	
+					Item: item,
 				}
-			}(item)		
-			time.Sleep(time.Duration(100) * time.Millisecond)				
+			}(item)
+			time.Sleep(time.Duration(100) * time.Millisecond)
 		}
 	}
 }
@@ -100,13 +99,13 @@ func (b *Batch) Close() {
 
 	go b.Producer.CheckRemainingItems(done)
 
-		select {
-		case <-done:
-			b.Log.Warn("Done")
-			b.Semaphore.Lock()
-			b.Stop()		
-			close(b.Item)	
-			b.Islocked = false
-			b.Semaphore.Unlock()
-		}
+	select {
+	case <-done:
+		b.Log.Warn("Done")
+		b.Semaphore.Lock()
+		b.Stop()
+		close(b.Item)
+		b.Islocked = false
+		b.Semaphore.Unlock()
+	}
 }

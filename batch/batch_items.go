@@ -1,7 +1,7 @@
 package batch
 
 type BatchItems struct {
-	Id 		int
+	Id      int
 	BatchNo int
-	Item 	interface{}
+	Item    interface{}
 }
