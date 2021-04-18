@@ -34,7 +34,7 @@ releases to the Consumer callback function.
 
 ## Go Docs
 
-    Documentation at <a href="https://pkg.go.dev/github.com/Deeptiman/go-batch">pkg.go.dev</a>
+   Documentation at <a href="https://pkg.go.dev/github.com/Deeptiman/go-batch">pkg.go.dev</a>
 
 ## Installation
 
