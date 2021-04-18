@@ -78,3 +78,52 @@ func TestBatch(t *testing.T){
 		b.Close()
 	})
 }
+
+func benchmarkBatch(numResources, maxItems int,b *testing.B){
+	for n := 0; n < b.N; n++ {
+
+		b := NewBatch(WithMaxItems(uint64(maxItems)))
+		 
+		b.StartBatchProcessing()
+		for i := 1; i <= numResources; i++ {
+			b.Item <- &Resources{
+				id:   i,
+				name: fmt.Sprintf("%s%d","R-",  i),
+				flag: false,
+			}
+		}
+		b.Close()
+	}
+}
+
+func BenchmarkBatchR100M5(b *testing.B){
+	benchmarkBatch(100,5, b)
+}
+
+func BenchmarkBatchR10M5(b *testing.B){
+	benchmarkBatch(10,5, b)
+}
+
+func BenchmarkBatchR100M10(b *testing.B){
+	benchmarkBatch(100,10, b)
+}
+
+func BenchmarkBatch(b *testing.B){
+
+	b.ResetTimer()
+	b.Run("Bench-1", func(b *testing.B){
+		benchmarkBatch(100,5, b)
+	})
+
+	b.Run("Bench-2", func(b *testing.B){
+		benchmarkBatch(500,50, b)
+	})
+
+	b.Run("Bench-3", func(b *testing.B){
+		benchmarkBatch(3000,300, b)
+	})
+
+	b.Run("Bench-4", func(b *testing.B){
+		benchmarkBatch(10000,100, b)
+	})
+}
