@@ -10,6 +10,7 @@ type Batch struct {
 	Item 			chan interface{}
 	Id 				int
 	Semaphore 		*Semaphore
+	Islocked		bool
 	Producer		*BatchProducer
 	Consumer 		*BatchConsumer
 	Log 			*log.Logger
@@ -46,6 +47,13 @@ func NewBatch(opts ...BatchOptions) *Batch{
 // listening infinitely.
 func (b *Batch) StartBachProcessing() {
 
+	b.Semaphore.Lock()
+	defer b.Semaphore.Unlock()
+
+	if b.Islocked {
+		panic("Concurrent batch processing is not allowed!")
+	}
+
 	go b.Producer.WatchProducer()
 	go b.Consumer.StartConsumer()
 	go b.ReadItems()
@@ -55,6 +63,8 @@ func (b *Batch) StartBachProcessing() {
 // object marshaled with BatchItem and then send to the Producer Watcher channel for further 
 // processing.
 func (b *Batch) ReadItems() {
+
+	b.Islocked = true
 
 	for {
 
@@ -96,6 +106,7 @@ func (b *Batch) Close() {
 			b.Semaphore.Lock()
 			b.Stop()			
 			close(b.Item)	
+			b.Islocked = false
 			b.Semaphore.Unlock()
 		}
 }
