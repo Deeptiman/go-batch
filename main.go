@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"time"
+	//"time"
 	batch "go-batch/batch"
 	log "github.com/sirupsen/logrus"
 )

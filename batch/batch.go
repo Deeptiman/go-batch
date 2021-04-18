@@ -104,7 +104,7 @@ func (b *Batch) Close() {
 		case <-done:
 			b.Log.Warn("Done")
 			b.Semaphore.Lock()
-			b.Stop()			
+			b.Stop()		
 			close(b.Item)	
 			b.Islocked = false
 			b.Semaphore.Unlock()
