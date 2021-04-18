@@ -36,7 +36,7 @@ type BatchConsumer struct {
 // BatchSupply structure defines the supply line for the final delivery of []BatchItems to the client
 //
 //	BatchSupplyCh: It's the bidirectional channel that request for the []BatchItems to the Workerline and gets in the response.
-//	ClientSupplyCh: It's delivery channel that Supply line sends the []BatchItems and the client receives by listening to the channel.
+//	ClientSupplyCh: It's delivery channel that works as a Supply line to sends the []BatchItems and the client receives by listening to the channel.
 type BatchSupply struct {
 	BatchSupplyCh  chan chan []BatchItems
 	ClientSupplyCh chan []BatchItems
