@@ -55,6 +55,8 @@ releases to the Consumer callback function.
     }
    b.Close() 
   ````````````````````````````````````````````````````
+  [![asciicast](https://asciinema.org/a/2vi5gAHjsuTrB3tCBTGeSW6hq.svg)](https://asciinema.org/a/2vi5gAHjsuTrB3tCBTGeSW6hq)
+  
 ## Note
 - In this version release, the library doesn't support starting concurrent BatchProcessing sessions. 
 
