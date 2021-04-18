@@ -74,7 +74,7 @@ func (p *BatchProducer) WatchProducer() {
 		case item := <-p.Watcher:
 
 			item.BatchNo = int(p.getBatchNo())
-			p.Log.WithFields(log.Fields{"Id": item.Id, "BatchNo": item.BatchNo, "Item": item.Item}).Info("Produce Items")
+			p.Log.WithFields(log.Fields{"Id": item.Id, "BatchNo": item.BatchNo, "Item": item.Item}).Info("BatchProducer")
 
 			items = append(items, *item)
 			itemCounter++

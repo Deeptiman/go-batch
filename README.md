@@ -7,6 +7,10 @@ go-batch is a batch processing library written in Go. The process execution has 
 2. There are no restrictions on applying batch processing matrices to the library. The client can define the maximum no of items for a batch using the <b>BatchOptions</b>.
 3. The library has a Workerpool that will faster the batch processing in concurrent scenarios.
 
+## Demo
+
+   [![asciicast](https://asciinema.org/a/2vi5gAHjsuTrB3tCBTGeSW6hq.svg)](https://asciinema.org/a/2vi5gAHjsuTrB3tCBTGeSW6hq) 
+
 ## Stages
 
  1. Batch Reader receives the resource payload from the client and marshals the payload item into the BatchItem object.
@@ -55,7 +59,6 @@ releases to the Consumer callback function.
     }
    b.Close() 
   ````````````````````````````````````````````````````
-  [![asciicast](https://asciinema.org/a/2vi5gAHjsuTrB3tCBTGeSW6hq.svg)](https://asciinema.org/a/2vi5gAHjsuTrB3tCBTGeSW6hq)
   
 ## Note
 - In this version release, the library doesn't support starting concurrent BatchProcessing sessions. 

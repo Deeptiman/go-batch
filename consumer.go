@@ -123,6 +123,8 @@ func (c *BatchConsumer) ConsumerBatch(ctx context.Context) {
 	for {
 		select {
 		case batchItems := <-c.ConsumerCh:
+			c.Log.WithFields(log.Fields{"Receive Batch Items": len(batchItems)}).Info("BatchConsumer")
+
 			c.BatchWorkerCh <- batchItems
 		case <-ctx.Done():
 			c.Log.Warn("Request cancel signal received!")
