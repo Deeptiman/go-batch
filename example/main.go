@@ -3,9 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	//"time"
 	log "github.com/sirupsen/logrus"
-	batch "go-batch/batch"
+	batch "github.com/Deeptiman/go-batch"
 )
 
 // Resources Structure
@@ -17,8 +16,6 @@ type Resources struct {
 
 func main() {
 
-	fmt.Println(" Job Queue Example !")
-
 	var rFlag, mFlag int
 	flag.IntVar(&rFlag, "r", 10, "No of resources")
 	flag.IntVar(&mFlag, "m", 10, "Maximum items")
@@ -26,7 +23,7 @@ func main() {
 
 	logs := log.New()
 
-	logs.WithFields(log.Fields{"Batch": "Items"}).Info("Batch System")
+	logs.Infoln("Batch Processing Example !")
 
 	b := batch.NewBatch(batch.WithMaxItems(uint64(mFlag)))
 
