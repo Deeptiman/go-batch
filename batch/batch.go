@@ -45,7 +45,7 @@ func NewBatch(opts ...BatchOptions) *Batch{
 // StartBachProcessing function to begin the BatchProcessing library and to start the Producer/
 // Consumer listeners. The ReadItems goroutine will receive the item from a source that keeps
 // listening infinitely.
-func (b *Batch) StartBachProcessing() {
+func (b *Batch) StartBatchProcessing() {
 
 	b.Semaphore.Lock()
 	defer b.Semaphore.Unlock()

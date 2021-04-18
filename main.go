@@ -30,14 +30,14 @@ func main() {
 
 	b := batch.NewBatch(batch.WithMaxItems(uint64(mFlag)))
 
-	b.StartBachProcessing()
+	b.StartBatchProcessing()
 
 	// go func() {
 
 	// 	select {
 	// 	case <-time.After(time.Duration(2) * time.Second):
 	// 		fmt.Println("Run Batch processing again!")
-	// 		b.StartBachProcessing()
+	// 		b.StartBatchProcessing()
 	// 	}
 
 	// }()
