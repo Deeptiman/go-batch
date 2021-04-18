@@ -38,25 +38,23 @@ releases to the Consumer callback function.
 
 ## Installation
 
-    `go get github.com/Deeptiman/go-batch`
+    go get github.com/Deeptiman/go-batch
 
 ## Example
 
-    ``````````````````````````
-    b := batch.NewBatch(batch.WithMaxItems(100))
+   ```````````````````````````````````````````````````` 
+   b := batch.NewBatch(batch.WithMaxItems(100))
+   go b.StartBatchProcessing()
 
-    go b.StartBatchProcessing()
-
-    for i := 1; i <= 1000; i++ {
+   for i := 1; i <= 1000; i++ {
         b.Item <- &Resources{
             id:   i,
             name: fmt.Sprintf("%s%d", "R-", i),
             flag: false,
         }
     }
-    b.Close()
- 
-    ``````````````````````````
+   b.Close() 
+  ````````````````````````````````````````````````````
 ## Note
 - In this version release, the library doesn't support starting concurrent BatchProcessing sessions. 
 
