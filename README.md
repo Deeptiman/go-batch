@@ -42,7 +42,7 @@ releases to the Consumer callback function.
 
 ## Example
 
-    ```````````````````````````````````````````````
+    ``````````````````````````
     b := batch.NewBatch(batch.WithMaxItems(100))
 
     go b.StartBatchProcessing()
@@ -55,7 +55,8 @@ releases to the Consumer callback function.
         }
     }
     b.Close()
-    ```````````````````````````````````````````````
+ 
+    ``````````````````````````
 ## Note
 - In this version release, the library doesn't support starting concurrent BatchProcessing sessions. 
 
