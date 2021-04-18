@@ -13,6 +13,16 @@ var (
 	DefaultWorkerPool = 10
 )
 
+// BatchConsumer struct defines the Consumer line for the Batch processing. It has the Workerline
+// that manages the concurrent scenarios where a large set of []BatchItems needs to be send to client.
+//
+//	ConsumerCh: It receives the []BatchItems from the Producer line.
+//	BatchWorkerCh: It has set of workers that manages the concurrent work under Workerline [sync.WaitGroup].
+//	Supply: The final chain in the batch processing that sends the []BatchItems to the client.
+//  Workerline: It's WaitGroup that synchronizes the workers to send the []BatchItems to the supply chain.
+//  TerminateCh: To handle the graceful shutdown, this channel will listen to the os.Signal and terminate processing accordingly.
+//  Quit: It's the exit channel for the Consumer to end the processing
+//  Log: Batch processing library uses "github.com/sirupsen/logrus" as logging tool.
 type BatchConsumer struct {
 	ConsumerCh    chan []BatchItems
 	BatchWorkerCh chan []BatchItems
@@ -23,6 +33,10 @@ type BatchConsumer struct {
 	Log           *log.Logger
 }
 
+// BatchSupply structure defines the supply line for the final delivery of []BatchItems to the client
+//
+//	BatchSupplyCh: It's the bidirectional channel that request for the []BatchItems to the Workerline and gets in the response.
+//	ClientSupplyCh: It's delivery channel that Supply line sends the []BatchItems and the client receives by listening to the channel.
 type BatchSupply struct {
 	BatchSupplyCh  chan chan []BatchItems
 	ClientSupplyCh chan []BatchItems
