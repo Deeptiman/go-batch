@@ -9,15 +9,25 @@ import (
 
 var (
 	itemCounter     = 1
-	DefaultMaxItems = uint64(100)
+	DefaultMaxItems = uint64(100)                     // maximum no of items packed inside a Batch
 	DefaultMaxWait  = time.Duration(30) * time.Second //seconds
 	DefaultBatchNo  = int32(1)
 
 	items []BatchItems
 )
 
+// ConsumerFunc is the callback function that invoke from Consumer
 type ConsumerFunc func(items []BatchItems)
 
+// BatchProducer struct defines the Producers fields that requires to create a []BatchItems object.
+//
+// Watcher: The receiver channel that gets the BatchItems marshalled object from Batch reader.
+// MaxItems: Maximum no of BatchItems can be packed for a released Batch.
+// BatchNo: Every []BatchItems that gets released marked with BatchNo [integer].
+// MaxWait: If a batch processing takes too long, then MaxWait has the timeout that expires after an interval.
+// ConsumerFunc: It's the callback function that gets invoke by the Consumer
+// Quit: It's the exit channel for the Producer to end the processing
+// Log: Batch processing library uses "github.com/sirupsen/logrus" as logging tool.
 type BatchProducer struct {
 	Watcher      chan *BatchItems
 	MaxItems     uint64

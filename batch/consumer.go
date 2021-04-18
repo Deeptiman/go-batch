@@ -102,7 +102,7 @@ func (c *BatchConsumer) ConsumerFunc(items []BatchItems) {
 // This also supports the termination of the Consumer line in case of graceful shutdown or to exit
 // the batch processing forcefully.
 //
-//  <-ctx.Done(): get called during a gracefull shutdown scenarios and closes the worker channel
+//  <-ctx.Done(): get called during a graceful shutdown scenarios and closes the worker channel
 //  <-c.Quit: Exit the batch processing during a forceful request from the client.
 func (c *BatchConsumer) ConsumerBatch(ctx context.Context) {
 
