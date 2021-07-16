@@ -99,8 +99,8 @@ func (c *BatchConsumer) StartConsumer() {
 
 	signal.Notify(c.TerminateCh, syscall.SIGINT, syscall.SIGTERM)
 	<-c.TerminateCh
-
 	cancel()
+	os.Exit(0)
 	c.Workerline.Wait()
 }
 
