@@ -67,6 +67,11 @@ func (b *Batch) StartBatchProcessing() {
 	go b.ReadItems()
 }
 
+// Unlock function will allow the batch processing to start with the multiple iteration
+func (b *Batch) Unlock() {
+	b.Islocked = false
+}
+
 // ReadItems function will run infinitely to listen to the Resource channel and the received
 // object marshaled with BatchItem and then send to the Producer Watcher channel for further
 // processing.
