@@ -2,7 +2,7 @@ package batch
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
+	log "github.com/Deeptiman/go-batch/logger"
 	"os"
 	"os/signal"
 	"sync"
@@ -61,7 +61,7 @@ func NewBatchConsumer() *BatchConsumer {
 		Workerline:    &sync.WaitGroup{},
 		TerminateCh:   make(chan os.Signal, 1),
 		Quit:          make(chan bool, 1),
-		Log:           log.New(),
+		Log:           log.NewLogger(),
 	}
 }
 
@@ -123,7 +123,7 @@ func (c *BatchConsumer) ConsumerBatch(ctx context.Context) {
 	for {
 		select {
 		case batchItems := <-c.ConsumerCh:
-			c.Log.WithFields(log.Fields{"Receive Batch Items": len(batchItems)}).Info("BatchConsumer")
+			c.Log.Infoln("BatchConsumer", "Receive Batch Items:", len(batchItems))
 
 			c.BatchWorkerCh <- batchItems
 		case <-ctx.Done():
@@ -145,7 +145,7 @@ func (c *BatchConsumer) WorkerFunc(index int) {
 
 	for batch := range c.BatchWorkerCh {
 
-		c.Log.WithFields(log.Fields{"Worker": index, "Batch": len(batch)}).Warn("Workerline")
+		c.Log.Debugln("Workerline", "Worker=", index, "Batch=", len(batch))
 
 		go c.GetBatchSupply()
 

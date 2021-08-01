@@ -1,7 +1,7 @@
 package batch
 
 import (
-	log "github.com/sirupsen/logrus"
+	log "github.com/Deeptiman/go-batch/logger"
 	"time"
 )
 
@@ -21,7 +21,7 @@ type Batch struct {
 	Islocked  bool
 	Producer  *BatchProducer
 	Consumer  *BatchConsumer
-	Log       *log.Logger
+	Log    	  *log.Logger
 }
 
 // NewBatch creates a new Batch object with BatchProducer & BatchConsumer. The BatchOptions
@@ -30,9 +30,9 @@ func NewBatch(opts ...BatchOptions) *Batch {
 
 	b := &Batch{
 		Item: make(chan interface{}),
-		Log:  log.New(),
+		Log:  log.NewLogger(),
 	}
-
+	
 	c := NewBatchConsumer()
 
 	p := NewBatchProducer(c.ConsumerFunc)
@@ -95,6 +95,11 @@ func (b *Batch) ReadItems() {
 	}
 }
 
+// SetLogLevel [Info:Debug]
+func (b *Batch) SetDebugLogLevel() {
+	b.Log.SetLogLevel(log.Debug)
+}
+
 // StopProducer to exit the Producer line.
 func (b *Batch) StopProducer() {
 	b.Producer.Quit <- true
@@ -107,7 +112,8 @@ func (b *Batch) Stop() {
 
 // Close is the exit function to terminate the batch processing.
 func (b *Batch) Close() {
-	b.Log.WithFields(log.Fields{"Remaining Items": len(items)}).Warn("CheckRemainingItems")
+	//b.Log.WithFields(log.Fields{"Remaining Items": len(items)}).Warn("CheckRemainingItems")
+	b.Log.Infoln("CheckRemainingItems", "Remaining=", len(items))
 
 	done := make(chan bool)
 

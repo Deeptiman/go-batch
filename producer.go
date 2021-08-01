@@ -3,8 +3,7 @@ package batch
 import (
 	"sync/atomic"
 	"time"
-
-	log "github.com/sirupsen/logrus"
+	log "github.com/Deeptiman/go-batch/logger"
 )
 
 var (	
@@ -53,7 +52,7 @@ func NewBatchProducer(callBackFn ConsumerFunc, opts ...BatchOptions) *BatchProdu
 		MaxWait:      DefaultMaxWait,
 		BatchNo:      DefaultBatchNo,
 		Quit:         make(chan bool),
-		Log:          log.New(),
+		Log:          log.NewLogger(),
 	}
 }
 
@@ -73,19 +72,18 @@ func (p *BatchProducer) WatchProducer() {
 		case item := <-p.Watcher:
 
 			item.BatchNo = int(p.getBatchNo())
-			p.Log.WithFields(log.Fields{"Id": item.Id, "Batch_Break":  item.Id / int(p.MaxItems), "BatchNo": item.BatchNo, "Item": item.Item}).Info("BatchProducer")			
-			
+			p.Log.Debugln("BatchProducer", "Id=", item.Id, "Batch Break=", item.Id / int(p.MaxItems), "BatchNo=",item.BatchNo, "Item=", item.Item)
+
 			items = append(items, *item)			
 			
 			if (item.Id / int(p.MaxItems)) == item.BatchNo {
-				p.Log.WithFields(log.Fields{"Item Size": len(items), "MaxItems": p.MaxItems}).Warn("BatchReady")				
+				p.Log.Infoln("BatchReady", "BatchNo=", item.BatchNo)
 				items = p.releaseBatch(items)
 				p.createBatchNo()
 			}
 			
 		case <-time.After(p.MaxWait):
-			p.Log.WithFields(log.Fields{"Items": len(items)}).Warn("MaxWait")
-
+			p.Log.Infoln("MaxWait", "Items=", len(items))
 			if len(items) == 0 {
 				return
 			}
