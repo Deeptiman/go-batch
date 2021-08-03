@@ -1,6 +1,8 @@
 # go-batch
 go-batch is a batch processing library written in Go. The process execution has multiple stages to release a Batch to the client.
 
+![GitHub top language](https://img.shields.io/github/languages/top/Deeptiman/go-batch) [![Go Report Card](https://goreportcard.com/badge/github.com/Deeptiman/go-batch)](https://goreportcard.com/report/github.com/Deeptiman/go-batch)
+
 ## Features
 
 1. Client can use this library as an asynchronous batch processing for their application use case.
