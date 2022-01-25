@@ -85,7 +85,7 @@ func (p *BatchProducer) WatchProducer() {
 		case <-time.After(p.MaxWait):
 			p.Log.Infoln("MaxWait", "Items=", len(items))
 			if len(items) == 0 {
-				return
+				continue
 			}
 			
 			items = p.releaseBatch(items)
