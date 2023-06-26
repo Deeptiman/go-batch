@@ -19,13 +19,19 @@ func main() {
 	var rFlag, mFlag int
 	flag.IntVar(&rFlag, "r", 10, "No of resources")
 	flag.IntVar(&mFlag, "m", 10, "Maximum items")
+	debugFlag := flag.Bool("d", false, "Debug mode")
 	flag.Parse()
+
+	logLevel := log.InfoLevel
+	if *debugFlag {
+		logLevel = log.DebugLevel
+	}
 
 	logs := log.New()
 
 	logs.Infoln("Batch Processing Example !")
 
-	b := batch.NewBatch(batch.WithMaxItems(uint64(mFlag)))
+	b := batch.NewBatch(batch.WithMaxItems(uint64(mFlag)), batch.WithLogLevel(logLevel))
 
 	b.StartBatchProcessing()
 

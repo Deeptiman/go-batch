@@ -72,25 +72,25 @@ func (p *BatchProducer) WatchProducer() {
 		case item := <-p.Watcher:
 
 			item.BatchNo = int(p.getBatchNo())
-			p.Log.Debugln("BatchProducer", "Id=", item.Id, "Batch Break=", item.Id / int(p.MaxItems), "BatchNo=",item.BatchNo, "Item=", item.Item)
+			p.Log.Debugln("BatchProducer", "Id=", item.Id, "Batch Break=", item.Id/int(p.MaxItems), "BatchNo=", item.BatchNo, "Item=", item.Item)
 
-			items = append(items, *item)			
-			
+			items = append(items, *item)
+
 			if (item.Id / int(p.MaxItems)) == item.BatchNo {
 				p.Log.Infoln("BatchReady", "BatchNo=", item.BatchNo)
 				items = p.releaseBatch(items)
 				p.createBatchNo()
 			}
-			
+
 		case <-time.After(p.MaxWait):
 			p.Log.Infoln("MaxWait", "Items=", len(items))
 			if len(items) == 0 {
 				continue
 			}
-			
+
 			items = p.releaseBatch(items)
 		case <-p.Quit:
-			p.Log.Warn("Quit BatchProducer")
+			p.Log.Info("Quit BatchProducer")
 
 			return
 		}
