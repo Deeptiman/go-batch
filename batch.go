@@ -95,11 +95,6 @@ func (b *Batch) ReadItems() {
 	}
 }
 
-// SetLogLevel [Info:Debug]
-func (b *Batch) SetDebugLogLevel() {
-	b.Log.SetLogLevel(log.Debug)
-}
-
 // StopProducer to exit the Producer line.
 func (b *Batch) StopProducer() {
 	b.Producer.Quit <- true
@@ -121,7 +116,7 @@ func (b *Batch) Close() {
 
 	select {
 	case <-done:
-		b.Log.Warn("Done")
+		b.Log.Info("Done")
 		b.Semaphore.Lock()
 		b.Stop()
 		close(b.Item)

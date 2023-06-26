@@ -7,7 +7,8 @@ import (
 type LogLevel int
 
 const (
-	Info   LogLevel = iota
+	Error LogLevel = iota
+	Info
 	Debug		
 )
 
@@ -25,6 +26,8 @@ func NewLogger() *Logger {
 		TimestampFormat: "2006-01-02 15:04:05",
 		FullTimestamp:   true,
 	})
+	// only log errors by default
+	log.SetLevel(logrus.ErrorLevel)
 
 	return &Logger{
 		log: log,
@@ -34,6 +37,10 @@ func NewLogger() *Logger {
 func (l *Logger) SetLogLevel(level LogLevel) {
 	if level == Debug {
 		l.log.Level = logrus.DebugLevel
+	} else if level == Info {
+		l.log.Level = logrus.InfoLevel
+	} else {
+		l.log.Level = logrus.ErrorLevel
 	}
 }
 
